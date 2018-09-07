@@ -7,15 +7,24 @@
 namespace sepreference {
 
     typedef enum {
-	indicator,
 	digital,
-	analog,
-	timer
+	indicator,
+	bcd,
+	uint8,
+	uint16,
+	uint32,
+	int8,
+	int16,
+	int32,
+	string,
+	unknown
     } TelegramPartType;
 
     
     struct TelegramPart {
 	int size;
+	int startbit;
+	int endbit;
 	TelegramPartType type;
 	int factor;
 	int def;
@@ -24,7 +33,9 @@ namespace sepreference {
     struct Telegram {
 	int port;
 	std::string ip;
-	std::list<std::unique_ptr<TelegramPart>> format;
+	std::map<std::string, std::unique_ptr<TelegramPart>> format;
+	int size;
+	std::shared_ptr<uint8_t[]> buf;
     };
 
 }
