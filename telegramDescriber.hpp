@@ -9,6 +9,7 @@ namespace sepreference {
 	std::vector<std::unique_ptr<Telegram>> telegrams;
     public:
 	TelegramDescriber(nlohmann::json &describer);
+	void updateValue(const std::string& name, uint32_t val);
     };
 }
 

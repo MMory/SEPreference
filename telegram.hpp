@@ -28,14 +28,19 @@ namespace sepreference {
 	TelegramPartType type;
 	int factor;
 	int def;
+	std::string name;
     };
     
     struct Telegram {
 	int port;
 	std::string ip;
-	std::map<std::string, std::unique_ptr<TelegramPart>> format;
+	std::list<std::unique_ptr<TelegramPart>> format;
 	int size;
-	std::shared_ptr<uint8_t[]> buf;
+	uint8_t *buf;
+
+	~Telegram(){
+	    delete buf;
+	}
     };
 
 }
