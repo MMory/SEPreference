@@ -1,5 +1,6 @@
 #include "external/include/json.hpp"
 #include <stdio.h>
+#include "simulatorExchangeSender.hpp"
 
 void printbits(uint8_t byte){
     printf("%d%d%d%d%d%d%d%d",

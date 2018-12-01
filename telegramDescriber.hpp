@@ -1,5 +1,5 @@
-#ifndef TELEGRAMDESCRIBER_HPP
-#define TELEGRAMDESCRIBER_HPP
+#ifndef _TELEGRAMDESCRIBER_HPP_
+#define _TELEGRAMDESCRIBER_HPP_
 
 #include "telegram.hpp"
 
@@ -9,7 +9,11 @@ namespace sepreference {
 	std::vector<std::unique_ptr<Telegram>> telegrams;
     public:
 	TelegramDescriber(nlohmann::json &describer);
-	void updateValue(const std::string& name, uint32_t val);
+	template<typename T> void updateValue(const std::string& name, T val){
+	for(auto &t: telegrams){
+	    t->updateValue<T>(name, val);
+	}
+    }
     };
 }
 
