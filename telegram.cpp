@@ -9,43 +9,26 @@ namespace sepreference {
 	}
     }
 
-    int Telegram::conv2be(uint32_t val){
-	union {
-	    uint16_t u16;
-	    uint8_t u8[2];
-	} u;
-	u.u16 = 0x0001;
-
-	if(u.u8[0]){
-	    val =
-	    	((val << 24) & 0xff000000) |
-	    	((val <<  8) & 0xff0000  ) |
-	    	((val >>  8) & 0xff00    ) |
-	    	((val >> 24) & 0xff      );
-	}
-	return val;        
-    }
-    
     TelegramPartType getTelegramPartType(std::string typestr){
-	if(typestr == "Digital")
+	if(typestr == "digital")
 	    return digital;
-	if(typestr == "Indicator")
+	if(typestr == "indicator")
 	    return indicator;
-	if(typestr == "BCD")
+	if(typestr == "bcd")
 	    return bcd;
-	if(typestr == "UInt8")
+	if(typestr == "uint8")
 	    return uint8;
-	if(typestr == "UInt16")
+	if(typestr == "uint16")
 	    return uint16;
-	if(typestr == "UInt32")
+	if(typestr == "uint32")
 	    return uint32;
-	if(typestr == "Int8")
+	if(typestr == "int8")
 	    return int8;
-	if(typestr == "Int16")
+	if(typestr == "int16")
 	    return int16;
-	if(typestr == "Int32")
+	if(typestr == "int32")
 	    return int32;
-	if(typestr == "String")
+	if(typestr == "string")
 	    return string;
 	return unknown;
     }
@@ -71,6 +54,24 @@ namespace sepreference {
 	default:
 	    return -1;
 	}
+    }
+
+    int Telegram::conv2be(int val, int size){
+	union {
+	    uint16_t u16;
+	    uint8_t u8[2];
+	} u;
+	u.u16 = 0x0001;
+
+	if(u.u8[0]){
+	    val =
+		((val << 24) & 0xff000000) |
+		((val <<  8) & 0xff0000  ) |
+		((val >>  8) & 0xff00    ) |
+		((val >> 24) & 0xff      );
+	    val = val >> (32 - 8 * ((size + 7) / 8));
+	}
+	return val;        
     }
 
     void Telegram::valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit){
@@ -105,7 +106,7 @@ namespace sepreference {
     }
 
     
-    Telegram::Telegram(std::string ip, int port, int cycle, nlohmann::json &format){
+    Telegram::Telegram(std::string ip, int port, int cycle, nlohmann::json &format) : socket(io_service){
 	send_pending = false;
 	this->ip = ip;
 	this->port = port;
@@ -139,5 +140,9 @@ namespace sepreference {
 	    sendthread = std::unique_ptr<std::thread>(new std::thread(thread_func));
 	}
     }
-
+    void Telegram::init_socket(){
+	socket.open(boost::asio::ip::udp::v4());
+	remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port);
+	send_telegram();
+    }
 }

@@ -2,9 +2,11 @@
 #define _TELEGRAM_HPP_
 
 #include <list>
+#include <chrono>
 #include <vector>
 #include <thread>
 #include "sepsend.hpp"
+#include "boost/asio.hpp"
 
 namespace sepreference {
 
@@ -46,29 +48,47 @@ namespace sepreference {
 	uint8_t *buf;
 	bool send_pending;
 	std::unique_ptr<std::thread> sendthread;
-	int conv2be(uint32_t val);
+
+	boost::asio::io_service io_service;
+	boost::asio::ip::udp::socket socket;
+	boost::asio::ip::udp::endpoint remote_endpoint;
+	
+	int conv2be(int val, int size);
 	void valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit);
 	
 	void send_telegram(){
 	    sepsend();
+	    for(int i = 0; i < size; i++){
+		printbits(this->buf[i]);
+	    }
+	    printf("\n");
+	    boost::system::error_code err;
+	    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
+	    fflush(stdout);
 	};
 	//static void thread_func();
     public:
 	Telegram(std::string ip, int port, int cycle, nlohmann::json &format);
+	void init_socket();
+	void close_socket();
 	template<typename T> void updateValue(const std::string& name, T val){
 	    for(auto &tp: format){
 		if(tp->name == name){
 		    const T scaled_val = val * tp->factor;
 		    T delta = std::max((T)tp->sent_val, scaled_val) - std::min((T)tp->sent_val, scaled_val);
-		    bool exceeded_hysteresis = delta > tp->hysteresis;
+		    bool exceeded_hysteresis = tp->hysteresis == 0 || delta >= tp->hysteresis || scaled_val == 0;
+		    //printf("%d %d\n", delta, tp->hysteresis);
 		    tp->new_val = (uint32_t)(int32_t)scaled_val;
-		    valcopy(conv2be(tp->new_val), buf, tp->startbit, tp->endbit);
+		    auto x = conv2be(tp->new_val, tp->size);
+		    valcopy(x, buf, tp->startbit, tp->endbit);
 		    if(exceeded_hysteresis){
 			if(cycle > 0)
 			    send_pending = true;
 			else {
+			    //send_telegram();
 			    sendthread = std::unique_ptr<std::thread>(new std::thread([this]() -> void {this->send_telegram();}));
 			    sendthread->detach();
+			    tp->sent_val = tp->new_val;
 			}
 		    }
 		}

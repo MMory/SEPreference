@@ -9,6 +9,7 @@ namespace sepreference {
 	std::vector<std::unique_ptr<Telegram>> telegrams;
     public:
 	TelegramDescriber(nlohmann::json &describer);
+	void init_sockets();
 	template<typename T> void updateValue(const std::string& name, T val){
 	for(auto &t: telegrams){
 	    t->updateValue<T>(name, val);
