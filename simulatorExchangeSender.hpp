@@ -4,7 +4,6 @@
 #include <memory>
 #include <map>
 #include <thread>
-#include "telegramDescriber.hpp"
 
 namespace sepreference {
     typedef enum {
@@ -12,7 +11,9 @@ namespace sepreference {
 	STATE_INITIALISED,
 	STATE_SENDING
     } SimulatorExchangeSenderState;
-    
+
+	class TelegramDescriber;
+
     class SimulatorExchangeSender {
     private:
 	static SimulatorExchangeSenderState state;

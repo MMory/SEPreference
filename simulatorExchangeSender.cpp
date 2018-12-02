@@ -1,7 +1,9 @@
 #include <memory>
 #include <fstream>
 #include <rapidjson/istreamwrapper.h>
+#include <rapidjson/document.h>
 #include "simulatorExchangeSender.hpp"
+#include "telegramDescriber.hpp"
 
 namespace sepreference {
     SimulatorExchangeSenderState SimulatorExchangeSender::state = STATE_OFF;
