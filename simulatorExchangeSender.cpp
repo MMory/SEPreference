@@ -12,11 +12,13 @@ namespace sepreference {
 	if(state == STATE_OFF){
 	    rapidjson::Document j;
 	    std::ifstream i(filename);
-	    rapidjson::IStreamWrapper isw(i);
-	    j.ParseStream(isw);
-	    describer = std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
-	    describer->init_sockets();
-	    state = STATE_INITIALISED;
+	    if(!i.fail()){
+		rapidjson::IStreamWrapper isw(i);
+		j.ParseStream(isw);
+		describer = std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
+		describer->init_sockets();
+		state = STATE_INITIALISED;
+	    }
 	}
     }
 
@@ -47,15 +49,18 @@ namespace sepreference {
     }
 
     void SimulatorExchangeSender::updateValue(const std::string& name, float val){
-	describer->updateValue<float>(name, val);
+	if(state != STATE_OFF)
+	    describer->updateValue<float>(name, val);
     }
 
     void SimulatorExchangeSender::updateValue(const std::string& name, int16_t val){
-	describer->updateValue<uint16_t>(name, val);
+	if(state != STATE_OFF)
+	    describer->updateValue<uint16_t>(name, val);
     }
 
     void SimulatorExchangeSender::updateValue(const std::string& name, int32_t val){
-	describer->updateValue<uint32_t>(name, val);
+	if(state != STATE_OFF)
+	    describer->updateValue<uint32_t>(name, val);
     }
 
 }
