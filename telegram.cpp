@@ -149,7 +149,7 @@ namespace sepreference {
 	// Now we know the length of the overall telegram and are able to allocate the buffer.
 	// Length should be dividable by 8, if it's not, we allocate an extra byte.
 	const int alloclength = bitpos / 8 + ((bitpos % 8) > 0);
-	buf = new uint8_t[alloclength];
+	buf = new uint8_t[alloclength]();
 	size = alloclength;
 	if(cycle > 0){
 	    sendthread = std::unique_ptr<std::thread>(new std::thread(thread_func));
