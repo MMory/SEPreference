@@ -1,4 +1,4 @@
-#include <json.hpp>
+#include <rapidjson/document.h>
 #include "simulatorExchangeSender.hpp"
 #include "telegram.hpp"
 
@@ -118,28 +118,31 @@ namespace sepreference {
     }
 
     
-    Telegram::Telegram(std::string ip, int port, int cycle, nlohmann::json &format) : socket(io_service){
+    Telegram::Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format) : socket(io_service){
 	send_pending = false;
 	this->ip = ip;
 	this->port = port;
 	this->cycle = cycle;
 	int bitpos = 0;
-	for(auto &json_tp: format){
+	for(auto& json_tp: format["format"].GetArray()){
 	    std::unique_ptr<TelegramPart> tp(new TelegramPart());
-	    tp->type = getTelegramPartType(json_tp["type"]);
-	    if(json_tp["factor"].is_number())
-		tp->factor = json_tp["factor"];
+	    tp->type = getTelegramPartType(json_tp["type"].GetString());
+	    if(json_tp.HasMember("factor") && json_tp["factor"].IsInt())
+		tp->factor = json_tp["factor"].GetInt();
 	    else
 		tp->factor = 1;
-	    if(json_tp["default"].is_number())
-		tp->def = json_tp["default"];
+	    if(json_tp.HasMember("default") && json_tp["default"].IsInt())
+		tp->def = json_tp["default"].GetInt();
 	    else
 		tp->def = 0;
 	    tp->startbit = bitpos;
 	    tp->size = getTelegramPartSize(tp->type);
 	    tp->endbit = bitpos + tp->size - 1;
-	    tp->name = json_tp["name"];
-	    tp->hysteresis = json_tp["hysteresis"].is_number() ? (int)json_tp["hysteresis"] : 0;
+	    tp->name = json_tp["name"].GetString();
+	    if(json_tp.HasMember("hysteresis") && json_tp["hysteresis"].IsInt())
+	       tp->hysteresis = json_tp["hysteresis"].GetInt();
+	    else
+		tp->hysteresis = 0;
 	    bitpos += tp->size;
 	    this->format.push_back(std::move(tp));
 	}

@@ -5,7 +5,7 @@
 #include <chrono>
 #include <vector>
 #include <thread>
-#include <json.hpp>
+#include <rapidjson/document.h>
 #include "boost/asio.hpp"
 
 namespace sepreference {
@@ -59,7 +59,7 @@ namespace sepreference {
 	void send_telegram();
 
     public:
-	Telegram(std::string ip, int port, int cycle, nlohmann::json &format);
+	Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format);
 	void init_socket();
 	void close_socket();
 	template<typename T> void updateValue(const std::string& name, T val){

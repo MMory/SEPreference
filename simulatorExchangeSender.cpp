@@ -1,6 +1,6 @@
 #include <memory>
 #include <fstream>
-#include <json.hpp>
+#include <rapidjson/istreamwrapper.h>
 #include "simulatorExchangeSender.hpp"
 
 namespace sepreference {
@@ -8,9 +8,10 @@ namespace sepreference {
     std::unique_ptr<TelegramDescriber> SimulatorExchangeSender::describer = std::unique_ptr<TelegramDescriber>(nullptr);
     void SimulatorExchangeSender::init(std::string &filename){
 	if(state == STATE_OFF){
-	    nlohmann::json j;
+	    rapidjson::Document j;
 	    std::ifstream i(filename);
-	    i >> j;
+	    rapidjson::IStreamWrapper isw(i);
+	    j.ParseStream(isw);
 	    describer = std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
 	    describer->init_sockets();
 	    state = STATE_INITIALISED;
