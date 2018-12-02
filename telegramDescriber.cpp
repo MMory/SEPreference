@@ -1,4 +1,3 @@
-//#include <json.hpp>
 #include "telegramDescriber.hpp"
 #include "telegram.hpp"
 
