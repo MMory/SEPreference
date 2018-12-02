@@ -8,7 +8,7 @@
 namespace sepreference {
     SimulatorExchangeSenderState SimulatorExchangeSender::state = STATE_OFF;
     std::unique_ptr<TelegramDescriber> SimulatorExchangeSender::describer = std::unique_ptr<TelegramDescriber>(nullptr);
-    void SimulatorExchangeSender::init(std::string &filename){
+    bool SimulatorExchangeSender::init(std::string &filename){
 	if(state == STATE_OFF){
 	    rapidjson::Document j;
 	    std::ifstream i(filename);
@@ -18,8 +18,10 @@ namespace sepreference {
 		describer = std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
 		describer->init_sockets();
 		state = STATE_INITIALISED;
+		return true;
 	    }
 	}
+	return false;
     }
 
     SimulatorExchangeSenderState SimulatorExchangeSender::getState(){

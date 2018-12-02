@@ -20,7 +20,7 @@ namespace sepreference {
 	static std::map<std::string, int> attributes;
 	static std::unique_ptr<TelegramDescriber> describer;
     public:
-	static void init(std::string &filename);
+	static bool init(std::string &filename);
 	static bool allowSending(bool allowed);
 	static SimulatorExchangeSenderState getState();
 	static void updateValue(const std::string& name, float val);
