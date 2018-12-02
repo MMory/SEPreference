@@ -5,7 +5,6 @@
 #include <chrono>
 #include <vector>
 #include <thread>
-#include "sepsend.hpp"
 #include "boost/asio.hpp"
 
 namespace sepreference {
@@ -56,17 +55,8 @@ namespace sepreference {
 	int conv2be(int val, int size);
 	void valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit);
 	
-	void send_telegram(){
-	    sepsend();
-	    for(int i = 0; i < size; i++){
-		printbits(this->buf[i]);
-	    }
-	    printf("\n");
-	    boost::system::error_code err;
-	    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
-	    fflush(stdout);
-	};
-	//static void thread_func();
+	void send_telegram();
+
     public:
 	Telegram(std::string ip, int port, int cycle, nlohmann::json &format);
 	void init_socket();
@@ -95,6 +85,7 @@ namespace sepreference {
 	    }
 	};
 	~Telegram(){
+	    close_socket();
 	    delete buf;
 	    buf = 0;
 	}

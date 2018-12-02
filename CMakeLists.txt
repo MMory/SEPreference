@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS "-O0 -Wall -g")
 
 include_directories(external/include)
 
-add_library(sepreference SHARED telegramDescriber.cpp simulatorExchangeSender.cpp telegram.cpp sepsend.cpp)
+add_library(sepreference SHARED telegramDescriber.cpp simulatorExchangeSender.cpp telegram.cpp)
 
 target_link_libraries(sepreference ${CMAKE_THREAD_LIBS_INIT} ${Boost_LIBRARIES})
 

@@ -2,6 +2,18 @@
 #include "simulatorExchangeSender.hpp"
 #include "telegram.hpp"
 
+void printbits(uint8_t byte){
+    printf("%d%d%d%d%d%d%d%d ",
+	   (byte >> 7) & 1,
+	   (byte >> 6) & 1,
+	   (byte >> 5) & 1,
+	   (byte >> 4) & 1,
+	   (byte >> 3) & 1,
+	   (byte >> 2) & 1,
+	   (byte >> 1) & 1,
+	   (byte >> 0) & 1);
+}
+
 namespace sepreference {
     void thread_func(){
 	while(SimulatorExchangeSender::getState() == STATE_SENDING){
@@ -140,9 +152,25 @@ namespace sepreference {
 	    sendthread = std::unique_ptr<std::thread>(new std::thread(thread_func));
 	}
     }
+
     void Telegram::init_socket(){
 	socket.open(boost::asio::ip::udp::v4());
 	remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port);
 	send_telegram();
+    }
+
+    void Telegram::send_telegram(){
+	if(SimulatorExchangeSender::getState() == STATE_SENDING){
+	    for(int i = 0; i < size; i++){
+		printbits(this->buf[i]);
+	    }
+	    printf("\n");
+	    boost::system::error_code err;
+	    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
+	}
+    }
+
+    void Telegram::close_socket(){
+	socket.close();
     }
 }

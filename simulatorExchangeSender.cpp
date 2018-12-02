@@ -21,6 +21,28 @@ namespace sepreference {
     	return state;
     }
 
+    bool SimulatorExchangeSender::allowSending(bool allowed){
+	if(allowed){
+	    switch(state){
+	    case STATE_INITIALISED:
+		state = STATE_SENDING;
+	    case STATE_SENDING:
+		return true;
+	    default:
+		return false;
+	    }
+	} else {
+	    switch(state){
+	    case STATE_SENDING:
+		state = STATE_INITIALISED;
+	    case STATE_INITIALISED:
+		return true;
+	    default:
+		return false;
+	    }
+	}
+    }
+
     void SimulatorExchangeSender::updateValue(const std::string& name, float val){
 	describer->updateValue<float>(name, val);
     }
@@ -32,4 +54,5 @@ namespace sepreference {
     void SimulatorExchangeSender::updateValue(const std::string& name, int32_t val){
 	describer->updateValue<uint32_t>(name, val);
     }
+
 }
