@@ -4,7 +4,6 @@
 #include <memory>
 #include <map>
 #include <thread>
-#include <json.hpp>
 #include "telegramDescriber.hpp"
 
 namespace sepreference {

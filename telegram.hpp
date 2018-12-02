@@ -5,6 +5,7 @@
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <json.hpp>
 #include "boost/asio.hpp"
 
 namespace sepreference {

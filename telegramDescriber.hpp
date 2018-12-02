@@ -1,6 +1,7 @@
 #ifndef _TELEGRAMDESCRIBER_HPP_
 #define _TELEGRAMDESCRIBER_HPP_
 
+#include <json.hpp>
 #include "telegram.hpp"
 
 namespace sepreference {
