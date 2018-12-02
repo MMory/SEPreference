@@ -172,8 +172,4 @@ namespace sepreference {
 	    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
 	}
     }
-
-    void Telegram::close_socket(){
-	socket.close();
-    }
 }

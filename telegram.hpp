@@ -61,7 +61,6 @@ namespace sepreference {
     public:
 	Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format);
 	void init_socket();
-	void close_socket();
 	template<typename T> void updateValue(const std::string& name, T val){
 	    for(auto &tp: format){
 		if(tp->name == name){
@@ -86,7 +85,6 @@ namespace sepreference {
 	    }
 	};
 	~Telegram(){
-	    close_socket();
 	    delete buf;
 	    buf = 0;
 	}
