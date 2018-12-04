@@ -171,7 +171,6 @@ namespace sepreference {
 			    std::unique_lock<std::mutex> comm_lock(comm_mutex);
 			    this->comm_condition.wait(comm_lock);
 			}
-			socket.close();
 		    }));
 	    std::unique_lock<std::mutex> comm_lock(comm_mutex);
 	    comm_condition.wait(comm_lock);
