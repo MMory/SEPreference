@@ -22,7 +22,6 @@ namespace sepreference {
     public:
 	static bool init(std::string &filename);
 	static bool allowSending(bool allowed);
-	static SimulatorExchangeSenderState getState();
 	static void updateValue(const std::string& name, float val);
 	static void updateValue(const std::string& name, uint32_t val);
 	static void updateValue(const std::string& name, uint16_t val);

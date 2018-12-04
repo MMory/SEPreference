@@ -15,12 +15,6 @@ void printbits(uint8_t byte){
 }
 
 namespace sepreference {
-    void thread_func(){
-	while(SimulatorExchangeSender::getState() == STATE_SENDING){
-
-	}
-    }
-
     TelegramPartType getTelegramPartType(std::string typestr){
 	if(typestr == "digital")
 	    return digital;
@@ -118,11 +112,12 @@ namespace sepreference {
     }
 
     
-    Telegram::Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format) : socket(io_service){
-	send_pending = false;
+    Telegram::Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format){
 	this->ip = ip;
 	this->port = port;
 	this->cycle = cycle;
+	this->sending.store(false);
+	this->thread_started.store(false);
 	int bitpos = 0;
 	for(auto& json_tp: format["format"].GetArray()){
 	    std::unique_ptr<TelegramPart> tp(new TelegramPart());
@@ -151,25 +146,42 @@ namespace sepreference {
 	const int alloclength = bitpos / 8 + ((bitpos % 8) > 0);
 	buf = new uint8_t[alloclength]();
 	size = alloclength;
-	if(cycle > 0){
-	    sendthread = std::unique_ptr<std::thread>(new std::thread(thread_func));
-	}
     }
 
-    void Telegram::init_socket(){
-	socket.open(boost::asio::ip::udp::v4());
-	remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(ip), port);
-	send_telegram();
-    }
-
-    void Telegram::send_telegram(){
-	if(SimulatorExchangeSender::getState() == STATE_SENDING){
-	    for(int i = 0; i < size; i++){
-		printbits(this->buf[i]);
-	    }
-	    printf("\n");
-	    boost::system::error_code err;
-	    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
+    void Telegram::setSending(bool sending){
+	if(sending){
+	    if(this->sending.load())
+		return;
+	    this->sending.store(true);
+	    sendthread = std::unique_ptr<std::thread>(new std::thread([this]() -> void {
+			boost::asio::io_service io_service;
+			boost::asio::ip::udp::socket socket(io_service);
+			boost::asio::ip::udp::endpoint remote_endpoint;
+			socket.open(boost::asio::ip::udp::v4());
+			remote_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(this->ip), this->port);
+			while(this->sending.load()){
+			    boost::system::error_code err;
+			    std::unique_lock<std::mutex> buf_lock(buf_mutex);
+			    socket.send_to(boost::asio::buffer(buf, size), remote_endpoint, 0, err);
+			    buf_lock.unlock();
+			    if(!this->thread_started.load()){
+				this->comm_condition.notify_one();
+				this->thread_started.store(true);
+			    }
+			    std::unique_lock<std::mutex> comm_lock(comm_mutex);
+			    this->comm_condition.wait(comm_lock);
+			}
+			socket.close();
+		    }));
+	    std::unique_lock<std::mutex> comm_lock(comm_mutex);
+	    comm_condition.wait(comm_lock);
+	} else {
+	    if(!this->sending.load())
+		return;
+	    this->sending.store(false);
+	    comm_condition.notify_one();
+	    sendthread->join();
+	    thread_started.store(false);
 	}
     }
 }

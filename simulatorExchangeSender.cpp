@@ -16,7 +16,6 @@ namespace sepreference {
 		rapidjson::IStreamWrapper isw(i);
 		j.ParseStream(isw);
 		describer = std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
-		describer->init_sockets();
 		state = STATE_INITIALISED;
 		return true;
 	    }
@@ -24,15 +23,12 @@ namespace sepreference {
 	return false;
     }
 
-    SimulatorExchangeSenderState SimulatorExchangeSender::getState(){
-    	return state;
-    }
-
     bool SimulatorExchangeSender::allowSending(bool allowed){
 	if(allowed){
 	    switch(state){
 	    case STATE_INITIALISED:
 		state = STATE_SENDING;
+		describer->setSending(true);
 	    case STATE_SENDING:
 		return true;
 	    default:
@@ -42,6 +38,7 @@ namespace sepreference {
 	    switch(state){
 	    case STATE_SENDING:
 		state = STATE_INITIALISED;
+		describer->setSending(false);
 	    case STATE_INITIALISED:
 		return true;
 	    default:

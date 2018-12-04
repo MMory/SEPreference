@@ -79,8 +79,9 @@ int main(int argc, char **argv){
     // std::this_thread::sleep_for(std::chrono::seconds(5));
     // sepreference::SimulatorExchangeSender::updateValue(key, 0);
     // std::this_thread::sleep_for(std::chrono::seconds(5));
-    sepreference::SimulatorExchangeSender::allowSending(argc % 2);
-    while(1){
+    sepreference::SimulatorExchangeSender::allowSending(true);
+    sepreference::SimulatorExchangeSender::allowSending(false);
+    while(0){
         float val = 0;
 	std::string uk;
 	std::cout << "key\n";

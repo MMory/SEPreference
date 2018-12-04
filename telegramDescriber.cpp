@@ -12,8 +12,9 @@ namespace sepreference {
 	    telegrams.push_back(std::unique_ptr<Telegram> (new Telegram(ip, port, cycle, json_t)));
 	}
     }
-    void TelegramDescriber::init_sockets(){
-	for(auto &t: telegrams)
-	    t->init_socket();
+    void TelegramDescriber::setSending(bool sending){
+	for(auto &t: telegrams){
+	    t->setSending(sending);
+	}
     }
 }

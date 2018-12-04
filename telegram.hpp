@@ -5,6 +5,8 @@
 #include <chrono>
 #include <vector>
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 #include <rapidjson/document.h>
 #include "boost/asio.hpp"
 
@@ -36,6 +38,7 @@ namespace sepreference {
 	uint32_t sent_val;
 	uint32_t new_val;
 	std::string name;
+	std::mutex mutex;
     };
     
     class Telegram {
@@ -45,13 +48,13 @@ namespace sepreference {
 	std::list<std::unique_ptr<TelegramPart>> format;
 	int size;
 	int cycle;
+	std::mutex buf_mutex;
+	std::mutex comm_mutex;
 	uint8_t *buf;
-	bool send_pending;
+	std::atomic<bool> sending;
+	std::atomic<bool> thread_started;
+	std::condition_variable comm_condition;
 	std::unique_ptr<std::thread> sendthread;
-
-	boost::asio::io_service io_service;
-	boost::asio::ip::udp::socket socket;
-	boost::asio::ip::udp::endpoint remote_endpoint;
 	
 	int conv2be(int val, int size);
 	void valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit);
@@ -60,9 +63,10 @@ namespace sepreference {
 
     public:
 	Telegram(std::string ip, int port, int cycle, const rapidjson::Value &format);
-	void init_socket();
+	void setSending(bool sending);
 	template<typename T> void updateValue(const std::string& name, T val){
 	    for(auto &tp: format){
+		std::lock_guard<std::mutex> l(tp->mutex);
 		if(tp->name == name){
 		    const T scaled_val = val * tp->factor;
 		    T delta = std::max((T)tp->sent_val, scaled_val) - std::min((T)tp->sent_val, scaled_val);
@@ -70,22 +74,19 @@ namespace sepreference {
 		    //printf("%d %d\n", delta, tp->hysteresis);
 		    tp->new_val = (uint32_t)(int32_t)scaled_val;
 		    auto x = conv2be(tp->new_val, tp->size);
+		    std::unique_lock<std::mutex> buf_lock(buf_mutex);
 		    valcopy(x, buf, tp->startbit, tp->endbit);
+		    buf_lock.unlock();
 		    if(exceeded_hysteresis){
-			if(cycle > 0)
-			    send_pending = true;
-			else {
-			    //send_telegram();
-			    sendthread = std::unique_ptr<std::thread>(new std::thread([this]() -> void {this->send_telegram();}));
-			    sendthread->detach();
-			    tp->sent_val = tp->new_val;
-			}
+			comm_condition.notify_one();
+			tp->sent_val = tp->new_val;
 		    }
 		}
 	    }
 	};
 	~Telegram(){
-	    delete buf;
+	    setSending(false);
+	    delete[] buf;
 	    buf = 0;
 	}
     };
