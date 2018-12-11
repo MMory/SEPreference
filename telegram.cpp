@@ -153,6 +153,12 @@ namespace sepreference {
 	    if(this->sending.load())
 		return;
 	    this->sending.store(true);
+	    std::unique_lock<std::mutex> buf_lock(buf_mutex);
+	    for(auto &tp: format){
+		if(tp->def > 0)
+		    valcopy(tp->def, buf, tp->startbit, tp->endbit);
+	    }
+	    buf_lock.unlock();
 	    sendthread = std::unique_ptr<std::thread>(new std::thread([this]() -> void {
 			boost::asio::io_service io_service;
 			boost::asio::ip::udp::socket socket(io_service);
