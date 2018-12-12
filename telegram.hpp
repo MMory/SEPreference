@@ -34,7 +34,7 @@ namespace sepreference {
 	TelegramPartType type;
 	int factor;
 	int def;
-	int hysteresis;
+	uint32_t hysteresis;
 	uint32_t sent_val;
 	uint32_t new_val;
 	std::string name;
@@ -71,10 +71,9 @@ namespace sepreference {
 		    if(val < 0 && (tp->type == uint8 || tp->type == uint16 || tp->type == uint32))
 			val = 0 - val;
 		    const T scaled_val = val * tp->factor;
-		    T delta = std::max((T)tp->sent_val, scaled_val) - std::min((T)tp->sent_val, scaled_val);
-		    bool exceeded_hysteresis = delta > (T)tp->hysteresis || (scaled_val == 0 && delta > 0);
-		    //printf("%d %d\n", delta, tp->hysteresis);
-		    tp->new_val = (uint32_t)(int32_t)scaled_val;
+			tp->new_val = (uint32_t)(int32_t)scaled_val;
+		    uint32_t delta = std::max(tp->sent_val, tp->new_val) - std::min(tp->sent_val, tp->new_val);
+		    bool exceeded_hysteresis = delta > tp->hysteresis || (scaled_val == 0 && delta > 0);
 		    auto x = conv2be(tp->new_val, tp->size);
 		    std::unique_lock<std::mutex> buf_lock(buf_mutex);
 		    valcopy(x, buf, tp->startbit, tp->endbit);
