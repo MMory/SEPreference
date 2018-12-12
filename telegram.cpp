@@ -156,7 +156,7 @@ namespace sepreference {
 	    std::unique_lock<std::mutex> buf_lock(buf_mutex);
 	    for(auto &tp: format){
 		if(tp->def > 0)
-		    valcopy(tp->def, buf, tp->startbit, tp->endbit);
+		    valcopy(conv2be(tp->def, tp->size), buf, tp->startbit, tp->endbit);
 	    }
 	    buf_lock.unlock();
 	    sendthread = std::unique_ptr<std::thread>(new std::thread([this]() -> void {
