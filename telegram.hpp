@@ -68,6 +68,8 @@ namespace sepreference {
 	    for(auto &tp: format){
 		std::lock_guard<std::mutex> l(tp->mutex);
 		if(tp->name == name){
+		    if(val < 0 && (tp->type == uint8 || tp->type == uint16 || tp->type == uint32))
+			val = -val;
 		    const T scaled_val = val * tp->factor;
 		    T delta = std::max((T)tp->sent_val, scaled_val) - std::min((T)tp->sent_val, scaled_val);
 		    bool exceeded_hysteresis = tp->hysteresis == 0 || delta >= (T)tp->hysteresis || (scaled_val == 0 && delta > 0);
