@@ -72,7 +72,7 @@ namespace sepreference {
 			val = 0 - val;
 		    const T scaled_val = val * tp->factor;
 		    T delta = std::max((T)tp->sent_val, scaled_val) - std::min((T)tp->sent_val, scaled_val);
-		    bool exceeded_hysteresis = tp->hysteresis == 0 || delta >= (T)tp->hysteresis || (scaled_val == 0 && delta > 0);
+		    bool exceeded_hysteresis = delta > (T)tp->hysteresis || (scaled_val == 0 && delta > 0);
 		    //printf("%d %d\n", delta, tp->hysteresis);
 		    tp->new_val = (uint32_t)(int32_t)scaled_val;
 		    auto x = conv2be(tp->new_val, tp->size);
