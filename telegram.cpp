@@ -175,7 +175,10 @@ namespace sepreference {
 				this->thread_started.store(true);
 			    }
 			    std::unique_lock<std::mutex> comm_lock(comm_mutex);
-			    this->comm_condition.wait(comm_lock);
+			    if(this->cycle > 0)
+			      this->comm_condition.wait_for(comm_lock, std::chrono::milliseconds(this->cycle));
+			    else
+			      this->comm_condition.wait(comm_lock);
 			}
 		    }));
 	    std::unique_lock<std::mutex> comm_lock(comm_mutex);
