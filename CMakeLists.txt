@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.9)
 set(CMAKE_CXX_STANDARD 11)
 find_package(Threads)
 find_package(Boost 1.63.0 REQUIRED COMPONENTS system)
-set(CMAKE_CXX_FLAGS "-O0 -Wall -g")
 
 include_directories(external/include)
 
