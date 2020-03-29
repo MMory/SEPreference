@@ -1,7 +1,7 @@
 //#include "external/include/json.hpp"
 //#include <stdio.h>
-#include <iostream>
 #include "simulatorExchangeSender.hpp"
+#include <iostream>
 
 // void printbits(uint8_t byte){
 //     printf("%d%d%d%d%d%d%d%d",
@@ -15,24 +15,24 @@
 // 	   (byte >> 0) & 1);
 // }
 
-
 // void valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit){
 //     int bitpos = startbit;
 //     // Check for pointless input
 //     if(startbit > endbit)
 // 	return;
-//     // This loop copies the bits from val to the right location in buf with bit
+//     // This loop copies the bits from val to the right location in buf with
+//     bit
 //     // precision.
 //     do{
-// 	// window of 8 bits. 
-// 	uint8_t source_byte = (val >> std::max((endbit - bitpos - 7), 0)) & 0xff;
-// 	uint8_t dest_byte = buf[bitpos / 8];
-// 	// mask for zeroing out the old bits that are replaced, while leaving the rest unchanged.
-// 	uint8_t dest_byte_mask = 0xff ^ ((1 << (8 - bitpos % 8)) - 1);
-// 	// corner case: last window is smaller, so align it to byte-begin and shrink the mask
-// 	if(endbit - bitpos < 8){
-// 	    dest_byte_mask |= ((1 << (7 - (endbit % 8))) - 1);
-// 	    source_byte = source_byte << (7 - (endbit - bitpos));
+// 	// window of 8 bits.
+// 	uint8_t source_byte = (val >> std::max((endbit - bitpos - 7), 0)) &
+// 0xff; 	uint8_t dest_byte = buf[bitpos / 8];
+// 	// mask for zeroing out the old bits that are replaced, while leaving
+// the rest unchanged. 	uint8_t dest_byte_mask = 0xff ^ ((1 << (8 - bitpos % 8))
+// - 1);
+// 	// corner case: last window is smaller, so align it to byte-begin and
+// shrink the mask 	if(endbit - bitpos < 8){ 	    dest_byte_mask |= ((1 << (7 -
+// (endbit % 8))) - 1); 	    source_byte = source_byte << (7 - (endbit - bitpos));
 // 	}
 // 	// align source to bit start offset
 // 	source_byte = source_byte >> (bitpos % 8);
@@ -46,13 +46,14 @@
 // 	// printf(" ");
 // 	// printbits(source_byte_mask);
 // 	// printf("\n");
-// 	buf[bitpos / 8] = (dest_byte & dest_byte_mask) | (source_byte & source_byte_mask);
+// 	buf[bitpos / 8] = (dest_byte & dest_byte_mask) | (source_byte &
+// source_byte_mask);
 // 	// increment to byte boundary
 // 	bitpos = (bitpos / 8 + 1) * 8;
 //     } while(bitpos <= endbit);
 // }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     // nlohmann::json j = nlohmann::json::parse("{\"keyy\": [1,2,3]}");
     // std::cout << j["key"].is_null() << j["keyy"].is_null();
     // uint8_t buf[16] = { 0 };
@@ -63,11 +64,11 @@ int main(int argc, char **argv){
     // 	printf(" ");
     // }
     // printf("\n");
-    //std::string s = j["key"];
-    //std::cout << s;
-    if(argc < 2){
-	printf("provide tdf please!\n");
-	return 1;
+    // std::string s = j["key"];
+    // std::cout << s;
+    if (argc < 2) {
+        printf("provide tdf please!\n");
+        return 1;
     }
     std::string s(argv[1]);
     sepreference::SimulatorExchangeSender::init(s);
@@ -81,18 +82,18 @@ int main(int argc, char **argv){
     // std::this_thread::sleep_for(std::chrono::seconds(5));
     sepreference::SimulatorExchangeSender::allowSending(true);
     sepreference::SimulatorExchangeSender::allowSending(false);
-    while(0){
+    while (0) {
         float val = 0;
-	std::string uk;
-	std::cout << "key\n";
-	fflush(stdin);
-	std::cin >> uk;
-	std::cout << "value\n";
-	std::cin >> val;
-	fflush(stdout);
-	sepreference::SimulatorExchangeSender::updateValue(uk, val);
-	fflush(stdout);
-	std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::string uk;
+        std::cout << "key\n";
+        fflush(stdin);
+        std::cin >> uk;
+        std::cout << "value\n";
+        std::cin >> val;
+        fflush(stdout);
+        sepreference::SimulatorExchangeSender::updateValue(uk, val);
+        fflush(stdout);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     // float val = 0;
     // std::this_thread::sleep_for(std::chrono::seconds(1));
