@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
+project(sepreference)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
 find_package(Threads)
 find_package(Boost 1.63.0 REQUIRED COMPONENTS system)
 
