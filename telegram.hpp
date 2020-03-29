@@ -58,8 +58,6 @@ class Telegram {
     int conv2be(int val, int size);
     void valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit);
 
-    void send_telegram();
-
   public:
     Telegram(std::string ip, int port, int cycle,
              const rapidjson::Value &format);
