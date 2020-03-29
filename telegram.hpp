@@ -15,7 +15,7 @@ namespace sepreference {
 typedef enum {
     digital,
     indicator,
-    bcd,
+    uint4,
     uint8,
     uint16,
     uint32,

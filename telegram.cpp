@@ -14,8 +14,8 @@ TelegramPartType getTelegramPartType(std::string typestr) {
         return digital;
     if (typestr == "indicator")
         return indicator;
-    if (typestr == "bcd")
-        return bcd;
+    if (typestr == "uint4")
+        return uint4;
     if (typestr == "uint8")
         return uint8;
     if (typestr == "uint16")
@@ -38,7 +38,7 @@ const int getTelegramPartSize(const TelegramPartType t) {
     case digital:
         return 1;
     case indicator:
-    case bcd:
+    case uint4:
         return 4;
     case uint8:
     case int8:
