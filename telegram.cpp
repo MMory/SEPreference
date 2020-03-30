@@ -1,5 +1,7 @@
 #include "telegram.hpp"
 #include "simulatorExchangeSender.hpp"
+#include <codecvt>
+#include <locale>
 #include <rapidjson/document.h>
 
 void printbits(uint8_t byte) {
@@ -33,29 +35,6 @@ TelegramPartType getTelegramPartType(std::string typestr) {
     return unknown;
 }
 
-const int getTelegramPartSize(const TelegramPartType t) {
-    switch (t) {
-    case digital:
-        return 1;
-    case indicator:
-    case uint4:
-        return 4;
-    case uint8:
-    case int8:
-        return 8;
-    case uint16:
-    case int16:
-        return 16;
-    case uint32:
-    case int32:
-        return 32;
-    case string:
-    case unknown:
-    default:
-        return -1;
-    }
-}
-
 int Telegram::conv2be(int val, int size) {
     union {
         uint16_t u16;
@@ -71,7 +50,7 @@ int Telegram::conv2be(int val, int size) {
     return val;
 }
 
-void Telegram::valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit) {
+void Telegram::valcopy(uint32_t val, int startbit, int endbit) {
     int bitpos = startbit;
     // Check for pointless input
     if (startbit > endbit)
@@ -106,6 +85,51 @@ void Telegram::valcopy(uint32_t val, uint8_t *buf, int startbit, int endbit) {
     } while (bitpos <= endbit);
 }
 
+void Telegram::valcopy(const uint8_t *val, int startbit, int endbit) {
+    size_t num_full_bytes = (endbit - startbit) / 8;
+    size_t num_leftover_bits = (endbit - startbit) % 8;
+    if (startbit % 8 == 0) {
+        memcpy(buf + (startbit / 8), val, num_full_bytes);
+    } else {
+        size_t num_full_four_byte_words = num_full_bytes / 4;
+        size_t num_leftover_bytes = num_full_bytes % 4;
+        for (size_t i = 0; i < num_full_four_byte_words; i++) {
+            valcopy(reinterpret_cast<const uint32_t *>(val)[i],
+                    startbit + i * 8, startbit + i * 8 + 31);
+        }
+        for (size_t i = 0; i < num_leftover_bytes; i++) {
+            valcopy(val[num_full_four_byte_words * 4 + i],
+                    startbit + num_full_four_byte_words * 32 + i * 8,
+                    startbit + num_full_four_byte_words * 32 + i * 8 + 7);
+        }
+    }
+    if (num_leftover_bits > 0)
+        valcopy(val[num_full_bytes], endbit - num_leftover_bits, endbit);
+}
+
+template <>
+void Telegram::updateValue(const std::string &name,
+                           std::basic_string<char16_t> &val) {
+    std::string utf8val = boost::locale::conv::utf_to_utf<char>(val);
+    updateValue(name, utf8val);
+}
+
+template <>
+void Telegram::updateValue(const std::string &name,
+                           std::basic_string<char> &val) {
+    for (auto &tp : format) {
+        std::lock_guard<std::mutex> l(tp->mutex);
+        if (tp->name == name) {
+            size_t actually_copied_bytes =
+                std::min(tp->len - 1, strlen(val.c_str()));
+            size_t actually_copied_bits = actually_copied_bytes * 8;
+            int endbit = tp->startbit + actually_copied_bits - 1;
+            valcopy(reinterpret_cast<const uint8_t *>(val.c_str()),
+                    tp->startbit, endbit);
+        }
+    }
+}
+
 Telegram::Telegram(std::string ip, int port, int cycle,
                    const rapidjson::Value &format) {
     this->ip = ip;
@@ -125,15 +149,18 @@ Telegram::Telegram(std::string ip, int port, int cycle,
             tp->def = json_tp["default"].GetInt();
         else
             tp->def = 0;
+        if (json_tp.HasMember("length") && json_tp["length"].IsInt())
+            tp->len = json_tp["length"].GetInt();
+        else
+            tp->len = 0;
         tp->startbit = bitpos;
-        tp->size = getTelegramPartSize(tp->type);
-        tp->endbit = bitpos + tp->size - 1;
+        tp->endbit = bitpos + tp->size() - 1;
         tp->name = json_tp["name"].GetString();
         if (json_tp.HasMember("hysteresis") && json_tp["hysteresis"].IsInt())
             tp->hysteresis = json_tp["hysteresis"].GetInt();
         else
             tp->hysteresis = 0;
-        bitpos += tp->size;
+        bitpos += tp->size();
         this->format.push_back(std::move(tp));
     }
     // Now we know the length of the overall telegram and are able to allocate
@@ -152,8 +179,7 @@ void Telegram::setSending(bool sending) {
         std::unique_lock<std::mutex> buf_lock(buf_mutex);
         for (auto &tp : format) {
             if (tp->def > 0)
-                valcopy(conv2be(tp->def, tp->size), buf, tp->startbit,
-                        tp->endbit);
+                valcopy(conv2be(tp->def, tp->size()), tp->startbit, tp->endbit);
         }
         buf_lock.unlock();
         sendthread =
