@@ -11,28 +11,28 @@ void printbits(uint8_t byte) {
 }
 
 namespace sepreference {
-TelegramPartType getTelegramPartType(std::string typestr) {
+TelegramPartType getTelegramPartType(const std::string &typestr) {
     if (typestr == "digital")
-        return digital;
+        return TelegramPartType::digital;
     if (typestr == "indicator")
-        return indicator;
+        return TelegramPartType::indicator;
     if (typestr == "uint4")
-        return uint4;
+        return TelegramPartType::uint4;
     if (typestr == "uint8")
-        return uint8;
+        return TelegramPartType::uint8;
     if (typestr == "uint16")
-        return uint16;
+        return TelegramPartType::uint16;
     if (typestr == "uint32")
-        return uint32;
+        return TelegramPartType::uint32;
     if (typestr == "int8")
-        return int8;
+        return TelegramPartType::int8;
     if (typestr == "int16")
-        return int16;
+        return TelegramPartType::int16;
     if (typestr == "int32")
-        return int32;
+        return TelegramPartType::int32;
     if (typestr == "string")
-        return string;
-    return unknown;
+        return TelegramPartType::string;
+    return TelegramPartType::unknown;
 }
 
 int Telegram::conv2be(int val, int size) {
@@ -130,11 +130,12 @@ void Telegram::updateValue(const std::string &name,
     }
 }
 
-Telegram::Telegram(std::string ip, int port, int cycle,
-                   const rapidjson::Value &format) {
-    this->ip = ip;
-    this->port = port;
-    this->cycle = cycle;
+Telegram::Telegram(const rapidjson::Value &format) {
+    this->ip = format["IP"].GetString();
+    this->port = format["port"].GetInt();
+    this->cycle = format.HasMember("cycle") && format["cycle"].IsInt()
+                      ? format["cycle"].GetInt()
+                      : 0;
     this->sending.store(false);
     this->thread_started.store(false);
     int bitpos = 0;

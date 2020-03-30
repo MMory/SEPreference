@@ -13,7 +13,7 @@
 
 namespace sepreference {
 
-typedef enum {
+enum class TelegramPartType {
     digital,
     indicator,
     uint4,
@@ -25,7 +25,7 @@ typedef enum {
     int32,
     string,
     unknown
-} TelegramPartType;
+};
 
 struct TelegramPart {
     int startbit;
@@ -41,23 +41,23 @@ struct TelegramPart {
     std::mutex mutex;
     constexpr int size() {
         switch (type) {
-        case digital:
+        case TelegramPartType::digital:
             return 1;
-        case indicator:
-        case uint4:
+        case TelegramPartType::indicator:
+        case TelegramPartType::uint4:
             return 4;
-        case uint8:
-        case int8:
+        case TelegramPartType::uint8:
+        case TelegramPartType::int8:
             return 8;
-        case uint16:
-        case int16:
+        case TelegramPartType::uint16:
+        case TelegramPartType::int16:
             return 16;
-        case uint32:
-        case int32:
+        case TelegramPartType::uint32:
+        case TelegramPartType::int32:
             return 32;
-        case string:
+        case TelegramPartType::string:
             return len * 8;
-        case unknown:
+        case TelegramPartType::unknown:
         default:
             return -1;
         }
@@ -84,15 +84,16 @@ class Telegram {
     void valcopy(const uint8_t *val, int startbit, int endbit);
 
   public:
-    Telegram(std::string ip, int port, int cycle,
-             const rapidjson::Value &format);
+    static const size_t maxBytesize = 65507;
+    Telegram(const rapidjson::Value &format);
     void setSending(bool sending);
     template <typename T> void updateValue(const std::string &name, T &val) {
         for (auto &tp : format) {
             std::lock_guard<std::mutex> l(tp->mutex);
             if (tp->name == name) {
-                if (val < 0 && (tp->type == uint8 || tp->type == uint16 ||
-                                tp->type == uint32))
+                if (val < 0 && (tp->type == TelegramPartType::uint8 ||
+                                tp->type == TelegramPartType::uint16 ||
+                                tp->type == TelegramPartType::uint32))
                     val = 0 - val;
                 const T scaled_val = val * tp->factor;
                 tp->new_val = static_cast<uint32_t>(scaled_val);
