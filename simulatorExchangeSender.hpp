@@ -66,6 +66,8 @@ class SimulatorExchangeSender {
     static void updateValue(const std::string &name, int32_t val);
     static void updateValue(const std::string &name, int16_t val);
     static void updateValue(const std::string &name, int8_t val);
+    static void updateValue(const std::string &name, std::string &val);
+    static void updateValue(const std::string &name, std::basic_string<char16_t> &val);
     static void updateValue(const std::string &name, std::wstring &val);
     static const std::string getErrorMsg();
 }; // namespace sepreference

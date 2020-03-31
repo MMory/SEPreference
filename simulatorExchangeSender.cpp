@@ -166,10 +166,32 @@ void SimulatorExchangeSender::updateValue(const std::string &name, float val) {
 }
 
 void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          int8_t val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        auto uval = static_cast<uint8_t>(val);
+        describer->updateValue<uint8_t>(name, uval);
+    }
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          uint8_t val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        describer->updateValue<uint8_t>(name, val);
+    }
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
                                           int16_t val) {
     if (state != SimulatorExchangeSenderState::STATE_OFF) {
         auto uval = static_cast<uint16_t>(val);
         describer->updateValue<uint16_t>(name, uval);
+    }
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          uint16_t val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        describer->updateValue<uint16_t>(name, val);
     }
 }
 
@@ -182,7 +204,26 @@ void SimulatorExchangeSender::updateValue(const std::string &name,
 }
 
 void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          uint32_t val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        describer->updateValue<uint32_t>(name, val);
+    }
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
                                           std::wstring &val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF)
+        describer->updateStringValue(name, val);
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          std::string &val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF)
+        describer->updateStringValue(name, val);
+}
+
+void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          std::basic_string<char16_t> &val) {
     if (state != SimulatorExchangeSenderState::STATE_OFF)
         describer->updateStringValue(name, val);
 }
