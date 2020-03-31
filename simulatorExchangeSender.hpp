@@ -1,6 +1,7 @@
 #ifndef _SIMULATOREXCHANGESENDER_HPP_
 #define _SIMULATOREXCHANGESENDER_HPP_
 
+#include <string>
 #include <map>
 #include <memory>
 #include <thread>
@@ -15,6 +16,7 @@ enum class SimulatorExchangeSenderState {
 enum class DescriberValidationResult {
     DESCRIBER_VALID,
     DESCRIBER_NOT_PROVIDED,
+    DESCRIBER_CANNOT_READ_FILE,
     DESCRIBER_INVALID_JSON,
     DESCRIBER_NO_TOPLEVEL_TELEGRAMS,
     DESCRIBER_TOPLEVEL_TELEGRAMS_NOT_ARRAY,
@@ -51,7 +53,6 @@ class TelegramDescriber;
 class SimulatorExchangeSender {
   private:
     static SimulatorExchangeSenderState state;
-    static std::map<std::string, int> attributes;
     static std::unique_ptr<TelegramDescriber> describer;
     static DescriberValidationResult validationResult;
 
@@ -65,6 +66,11 @@ class SimulatorExchangeSender {
     static void updateValue(const std::string &name, int32_t val);
     static void updateValue(const std::string &name, int16_t val);
     static void updateValue(const std::string &name, int8_t val);
+    static void updateValue(const std::string& name,
+        std::basic_string<wchar_t>& val) {
+        if (state != SimulatorExchangeSenderState::STATE_OFF)
+            describer->updateValue<std::basic_string<wchar_t>>(name, val);
+    }
     static const std::string getErrorMsg();
 };
 

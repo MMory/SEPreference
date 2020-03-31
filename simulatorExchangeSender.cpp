@@ -115,7 +115,14 @@ bool SimulatorExchangeSender::init(std::string &filename) {
         if (!i.fail()) {
             rapidjson::IStreamWrapper isw(i);
             j.ParseStream(isw);
-            if (validateDescriber(j) !=
+            if (j.GetParseError() !=
+                rapidjson::ParseErrorCode::kParseErrorNone) {
+                validationResult =
+                    DescriberValidationResult::DESCRIBER_INVALID_JSON;
+                return false;
+            }
+            validationResult = validateDescriber(j);
+            if (validationResult !=
                 DescriberValidationResult::DESCRIBER_VALID)
                 return false;
             describer =
@@ -124,7 +131,7 @@ bool SimulatorExchangeSender::init(std::string &filename) {
             return true;
         } else {
             validationResult =
-                DescriberValidationResult::DESCRIBER_INVALID_JSON;
+                DescriberValidationResult::DESCRIBER_CANNOT_READ_FILE;
         }
     }
     return false;
@@ -161,14 +168,18 @@ void SimulatorExchangeSender::updateValue(const std::string &name, float val) {
 
 void SimulatorExchangeSender::updateValue(const std::string &name,
                                           int16_t val) {
-    if (state != SimulatorExchangeSenderState::STATE_OFF)
-        describer->updateValue<uint16_t>(name, val);
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        auto uval = static_cast<uint16_t>(val);
+        describer->updateValue<uint16_t>(name, uval);
+    }
 }
 
 void SimulatorExchangeSender::updateValue(const std::string &name,
                                           int32_t val) {
-    if (state != SimulatorExchangeSenderState::STATE_OFF)
-        describer->updateValue<uint32_t>(name, val);
+    if (state != SimulatorExchangeSenderState::STATE_OFF) {
+        auto uval = static_cast<uint32_t>(val);
+        describer->updateValue<uint32_t>(name, uval);
+    }
 }
 
 const std::string SimulatorExchangeSender::getErrorMsg() {
@@ -177,6 +188,8 @@ const std::string SimulatorExchangeSender::getErrorMsg() {
         return "Valid telegram describer.";
     case DescriberValidationResult::DESCRIBER_NOT_PROVIDED:
         return "No describer provided yet.";
+    case DescriberValidationResult::DESCRIBER_CANNOT_READ_FILE:
+        return "Cannot read provided file.";
     case DescriberValidationResult::DESCRIBER_INVALID_JSON:
         return "Provided file is no valid json.";
     case DescriberValidationResult::DESCRIBER_NO_TOPLEVEL_TELEGRAMS:

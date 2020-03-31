@@ -107,29 +107,6 @@ void Telegram::valcopy(const uint8_t *val, int startbit, int endbit) {
         valcopy(val[num_full_bytes], endbit - num_leftover_bits, endbit);
 }
 
-template <>
-void Telegram::updateValue(const std::string &name,
-                           std::basic_string<char16_t> &val) {
-    std::string utf8val = boost::locale::conv::utf_to_utf<char>(val);
-    updateValue(name, utf8val);
-}
-
-template <>
-void Telegram::updateValue(const std::string &name,
-                           std::basic_string<char> &val) {
-    for (auto &tp : format) {
-        std::lock_guard<std::mutex> l(tp->mutex);
-        if (tp->name == name) {
-            size_t actually_copied_bytes =
-                std::min(tp->len - 1, strlen(val.c_str()));
-            size_t actually_copied_bits = actually_copied_bytes * 8;
-            int endbit = tp->startbit + actually_copied_bits - 1;
-            valcopy(reinterpret_cast<const uint8_t *>(val.c_str()),
-                    tp->startbit, endbit);
-        }
-    }
-}
-
 Telegram::Telegram(const rapidjson::Value &format) {
     this->ip = format["IP"].GetString();
     this->port = format["port"].GetInt();

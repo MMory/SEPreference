@@ -112,20 +112,27 @@ class Telegram {
             }
         }
     };
+    template <typename T>
+    void updateValue(const std::string& name, std::basic_string<T>& val) {
+        std::string utf8val = boost::locale::conv::utf_to_utf<char>(val);
+        for (auto &tp : format) {
+            std::lock_guard<std::mutex> l(tp->mutex);
+            if (tp->name == name) {
+                size_t actually_copied_bytes =
+                    std::min(tp->len - 1, strlen(utf8val.c_str()));
+                size_t actually_copied_bits = actually_copied_bytes * 8;
+                int endbit = tp->startbit + actually_copied_bits - 1;
+                valcopy(reinterpret_cast<const uint8_t *>(utf8val.c_str()),
+                        tp->startbit, endbit);
+            }
+        }
+    }
     ~Telegram() {
         setSending(false);
         delete[] buf;
         buf = 0;
     }
 };
-
-template <>
-void Telegram::updateValue(const std::string &name,
-                           std::basic_string<char16_t> &val);
-template <>
-void Telegram::updateValue(const std::string &name,
-                           std::basic_string<char> &val);
-
 } // namespace sepreference
 
 #endif
