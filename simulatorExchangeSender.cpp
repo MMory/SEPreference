@@ -122,8 +122,7 @@ bool SimulatorExchangeSender::init(std::string &filename) {
                 return false;
             }
             validationResult = validateDescriber(j);
-            if (validationResult !=
-                DescriberValidationResult::DESCRIBER_VALID)
+            if (validationResult != DescriberValidationResult::DESCRIBER_VALID)
                 return false;
             describer =
                 std::unique_ptr<TelegramDescriber>(new TelegramDescriber(j));
@@ -182,6 +181,12 @@ void SimulatorExchangeSender::updateValue(const std::string &name,
     }
 }
 
+void SimulatorExchangeSender::updateValue(const std::string &name,
+                                          std::wstring &val) {
+    if (state != SimulatorExchangeSenderState::STATE_OFF)
+        describer->updateStringValue(name, val);
+}
+
 const std::string SimulatorExchangeSender::getErrorMsg() {
     switch (validationResult) {
     case DescriberValidationResult::DESCRIBER_VALID:
@@ -229,24 +234,29 @@ const std::string SimulatorExchangeSender::getErrorMsg() {
     case DescriberValidationResult::DESCRIBER_TELEGRAMPART_HYSTERESIS_NOT_INT:
         return "Telegram part element \"hysteresis\" is not an int.";
     case DescriberValidationResult::DESCRIBER_TELEGRAMPART_STRING_NO_LENGTH:
-        return "Telegram part type is string, but mandatory element \"length\" is not present.";
+        return "Telegram part type is string, but mandatory element \"length\" "
+               "is not present.";
     case DescriberValidationResult::
         DESCRIBER_TELEGRAMPART_STRING_LENGTH_NOT_INT:
         return "Telegram part element \"length\" is not an int.";
     case DescriberValidationResult::
         DESCRIBER_TELEGRAMPART_STRING_ILLEGAL_FACTOR:
-        return "Telegram part type is string, for that, the element \"factor\" is illegal.";
+        return "Telegram part type is string, for that, the element \"factor\" "
+               "is illegal.";
     case DescriberValidationResult::
         DESCRIBER_TELEGRAMPART_STRING_ILLEGAL_DEFAULT:
-        return "Telegram part type is string, for that, the element \"default\" is illegal.";
+        return "Telegram part type is string, for that, the element "
+               "\"default\" is illegal.";
     case DescriberValidationResult::
         DESCRIBER_TELEGRAMPART_STRING_ILLEGAL_HYSTERESIS:
-        return "Telegram part type is string, for that, the element \"hysteresis\" is illegal.";
+        return "Telegram part type is string, for that, the element "
+               "\"hysteresis\" is illegal.";
     case DescriberValidationResult::
         DESCRIBER_TELEGRAMPART_NONSTRING_ILLEGAL_LENGTH:
-        return "Telegram part type is not string, for that, the element \"length\" is illegal.";
+        return "Telegram part type is not string, for that, the element "
+               "\"length\" is illegal.";
     default:
-      return "Unknown error.";
+        return "Unknown error.";
     }
 }
 

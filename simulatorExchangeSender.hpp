@@ -1,9 +1,9 @@
 #ifndef _SIMULATOREXCHANGESENDER_HPP_
 #define _SIMULATOREXCHANGESENDER_HPP_
 
-#include <string>
 #include <map>
 #include <memory>
+#include <string>
 #include <thread>
 
 namespace sepreference {
@@ -66,13 +66,9 @@ class SimulatorExchangeSender {
     static void updateValue(const std::string &name, int32_t val);
     static void updateValue(const std::string &name, int16_t val);
     static void updateValue(const std::string &name, int8_t val);
-    static void updateValue(const std::string& name,
-        std::basic_string<wchar_t>& val) {
-        if (state != SimulatorExchangeSenderState::STATE_OFF)
-            describer->updateValue<std::basic_string<wchar_t>>(name, val);
-    }
+    static void updateValue(const std::string &name, std::wstring &val);
     static const std::string getErrorMsg();
-};
+}; // namespace sepreference
 
 } // namespace sepreference
 

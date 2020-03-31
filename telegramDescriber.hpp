@@ -13,9 +13,15 @@ class TelegramDescriber {
   public:
     TelegramDescriber(rapidjson::Document &describer);
     void setSending(bool sending);
-    template <typename T> void updateValue(const std::string &name, T& val) {
+    template <typename T> void updateValue(const std::string &name, T &val) {
         for (auto &t : telegrams) {
             t->updateValue<T>(name, val);
+        }
+    }
+    template <typename S>
+    void updateStringValue(const std::string &name, std::basic_string<S> &val) {
+        for (auto &t : telegrams) {
+            t->updateStringValue<S>(name, val);
         }
     }
 };

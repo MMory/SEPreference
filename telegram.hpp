@@ -112,8 +112,9 @@ class Telegram {
             }
         }
     };
-    template <typename T>
-    void updateValue(const std::string& name, std::basic_string<T>& val) {
+
+    template <typename S>
+    void updateStringValue(const std::string &name, std::basic_string<S> &val) {
         std::string utf8val = boost::locale::conv::utf_to_utf<char>(val);
         for (auto &tp : format) {
             std::lock_guard<std::mutex> l(tp->mutex);
