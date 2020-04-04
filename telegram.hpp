@@ -125,6 +125,7 @@ class Telegram {
                 int endbit = tp->startbit + actually_copied_bits - 1;
                 valcopy(reinterpret_cast<const uint8_t *>(utf8val.c_str()),
                         tp->startbit, endbit);
+                comm_condition.notify_one();
             }
         }
     }
