@@ -132,6 +132,8 @@ bool SimulatorExchangeSender::init(std::string &filename) {
             validationResult =
                 DescriberValidationResult::DESCRIBER_CANNOT_READ_FILE;
         }
+    } else {
+        return true;
     }
     return false;
 }
